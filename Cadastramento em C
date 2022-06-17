@@ -1,0 +1,189 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <locale.h>
+#define MAX_JOGOS 450
+#define MAX_PRE 200
+#define TAM_CIDADE 120
+
+void criando_arquivo_presidente();
+void lendo_arquivo_presidente();
+void ordem_alfabetica(char cidades[MAX_JOGOS][TAM_CIDADE], int num_Jogo[MAX_JOGOS], double val_Arrecadado[MAX_JOGOS], int linha);
+void levalida_valornum(int num_Jogo, int* p);
+void levalida_valordin(double val_Arrecardado, int* h);
+
+int main() {
+	setlocale(LC_ALL,"portuguese");
+	int op, num_Jogo[MAX_JOGOS], cont, num_Jogoss[MAX_JOGOS];
+	double val_Arrecardado[MAX_JOGOS];
+	char cidades[MAX_JOGOS][TAM_CIDADE], cid_pesquisa[TAM_CIDADE];
+	int linha=0, i=0, j=0, f, p, h;
+	
+	do{
+		system("cls");
+		printf("\n------MENU------\n1 - Cadastrar jogo\n2 - Lista de cadastramento\n3 - Consulta de jogos\n4 - Sair\n");
+		scanf("%d",&op);
+		getchar();
+		switch(op) {
+			case 1:
+				do{
+					criando_arquivo_presidente();
+					printf("Digite o numero unico fornecido pela CBF:\n");
+					scanf("%d", &num_Jogo[linha]);
+					levalida_valornum(num_Jogo[linha], &p);
+					if(p) {
+						printf ("numero invalido!");
+						getchar();
+						getchar();
+						break;
+					}
+					f = 0;
+					for(j = 0; j < linha; j++) {
+						if(num_Jogo[linha] == num_Jogo[j]) {
+							f = 1;
+						}
+					}
+					if(f) {
+						printf ("Numero invalido!\n Digite qualquer outro numero para voltar ao menu!");
+						getchar();
+						getchar();
+						break;
+					}
+					printf("Digite o valor arrecadado com a venda dos ingressos em reais:\nR$");
+					scanf("%lf",&val_Arrecardado[linha]);
+					levalida_valornum(val_Arrecardado[linha], &h);
+					if(h) {
+						printf ("numero invalido!");
+						getchar();
+						getchar();
+						break;
+					}
+                    getchar();
+					printf("Digite o nome da cidade onde foi realizado o jogo :\n");
+					scanf("%[^\n]s", cidades[linha]);
+					for (j = 0; j < strlen(cidades[linha]) + 1; j++) {
+						cidades[linha][j] = tolower(cidades[linha][j]);
+					}
+					printf("Digite 1 para continuar ou qualquer outro numero real para sair :\n");
+					scanf("%d",&cont);
+					linha++;
+				}while(cont==1);
+				break;
+			case 2:
+				lendo_arquivo_presidente();
+				for(j=0;j<linha;j++){
+					ordem_alfabetica(cidades, num_Jogo, val_Arrecardado, linha);
+					printf("\nCidade: %s\nNumero unico fornecido pela CBF: %d\nValor arrecadado: R$%2.lf\n", cidades[j], num_Jogo[j], val_Arrecardado[j]);
+				}
+                printf("Digite qualquer tecla para continuar\n");
+                getchar();
+				break;
+			case 3:
+				do{
+					printf("\nDigite o nome da cidade que deseja pesquisar:\n");
+					scanf("%[^\n]s", cid_pesquisa);
+					f = 0;
+					for(i=0;i<linha;i++){
+						if(strcmp(cidades[i],cid_pesquisa)==0){
+							printf("\nCidade: %s\nNumero unico fornecido pela CBF: %d\nValor arrecadado: R$%2.lf\n\n", cidades[i], num_Jogo[i], val_Arrecardado[i]);
+							f = 1;
+							break;
+						}
+					}
+					if (!f) {
+						printf("\nNao ocorreu jogo na cidade %s\n",cid_pesquisa);
+					}
+					printf("Digite 1 para continuar pesquisando ou qualquer outro numero real para sair :\n");
+					scanf("%d",&cont);
+                    getchar();
+				}while(cont==1);
+				break;
+			case 4:
+				system("exit");
+				break;
+			default:
+				printf("Opcao invalida\n");
+				printf("Aperte qualquer outro numero ou der enter, para voltar ao menu! ");
+				getchar();
+				break;
+		}
+	}while(op!=4 );	
+	return 0;
+}
+
+void criando_arquivo_presidente(){
+		FILE *ler;
+		ler = fopen("Nome do presidente.txt", "r");
+		if(ler == NULL){
+			char nome[MAX_PRE];
+			int i;
+			printf ("Digite o nome do presidente da CBF:\n");
+			scanf("%[^\n]s", nome);
+			for (i = 0; i < strlen(nome) + 1; i++) {
+				nome[i]=tolower(nome[i]);
+				if (i == 0 || nome[i - 1] == ' '){
+					nome[i] = toupper(nome[i]);
+				}
+			}
+			FILE *file;
+			file = fopen("Nome do presidente.txt", "wb");
+			fprintf(file,"%s",nome);
+			fclose(file);
+		}
+}
+
+void lendo_arquivo_presidente(){
+		FILE *ler;
+		ler = fopen("Nome do presidente.txt", "r");
+		char NOME[MAX_PRE];
+		while(fgets(NOME, MAX_PRE, ler) !=NULL){
+			printf ("nome do presidente:\n %s", NOME);
+			printf ("\n");
+		}
+}
+
+void ordem_alfabetica(char cidades[MAX_JOGOS][TAM_CIDADE], int num_Jogo[MAX_JOGOS], double val_Arrecadado[MAX_JOGOS], int linha){
+	int k=0, f;
+	char nome_aux[TAM_CIDADE];
+	int num_jogo_aux, val_arrecadado_aux;
+	do
+	{
+		f = 0;
+		for(k=0;k<linha - 1;k++){
+			if(strcmp(cidades[k], cidades[k + 1]) > 0 ){
+				strcpy(nome_aux, cidades[k]);  //aux <= [k]   
+				strcpy(cidades[k], cidades[k + 1]);  //[k] <= [k + 1]  
+				strcpy(cidades[k + 1],nome_aux); //[k + 1] <= aux
+
+				num_jogo_aux = num_Jogo[k]; //aux <= [k]
+				num_Jogo[k] = num_Jogo[k + 1]; //[k] <= [k + 1]
+				num_Jogo[k + 1] = num_jogo_aux; //[k + 1] <= aux
+
+				val_arrecadado_aux = val_Arrecadado[k]; //aux <= [k]
+				val_Arrecadado[k] = val_Arrecadado[k + 1]; //[k] <= [k + 1]
+				val_Arrecadado[k + 1] = val_arrecadado_aux; //[k + 1] <= aux
+				f = 1;
+			}
+		}
+	} while (f);
+}
+
+void levalida_valornum(int num_Jogo, int* p){
+	if(num_Jogo>10000 || num_Jogo<300){
+		*p = 1;
+	}
+	else {
+		*p = 0;
+	}
+}
+
+void levalida_valordin(double val_Arrecardado, int* h){
+	if(val_Arrecardado<1000 || val_Arrecardado>1000000 ){
+		*h = 1;
+	}
+	else {
+		*h = 0;
+	}
+}
